@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Blog Vice Versa]]></title>
+  <link href="http://rtanote.github.io/atom.xml" rel="self"/>
+  <link href="http://rtanote.github.io/"/>
+  <updated>2014-03-02T20:33:01+09:00</updated>
+  <id>http://rtanote.github.io/</id>
+  <author>
+    <name><![CDATA[rtanote]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Hello World]]></title>
+    <link href="http://rtanote.github.io/blog/2014/03/02/hello-world/"/>
+    <updated>2014-03-02T18:50:56+09:00</updated>
+    <id>http://rtanote.github.io/blog/2014/03/02/hello-world</id>
+    <content type="html"><![CDATA[<p>Audio Unitの開発記録を記載する予定です</p>
+]]></content>
+  </entry>
+  
+</feed>
