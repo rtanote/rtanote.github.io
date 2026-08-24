@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>x68k-archive — X68000 のディスクイメージを Claude が読めるナレッジベースに</title>
+<meta name="description" content="X68000 (Human68k) の XDF / HDS / HDF ディスクイメージを直接読み、全文索引化して MCP 経由で Claude から検索・閲覧できるようにする Rust ツール群。Read X68000 disk images, index them, and query the archive from Claude over MCP.">
+<meta property="og:title" content="x68k-archive — ask your X68000 floppies">
+<meta property="og:description" content="XDF / HDS / HDF を直接読んで全文索引化。MCP で Claude に繋ぎ、当時のソース・MML・ドキュメントを自然言語で引ける。">
+<meta property="og:image" content="https://rtanote.github.io/x68k-archive/apple-touch-icon.png">
+<meta property="og:url" content="https://rtanote.github.io/x68k-archive/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="x68k-archive — ask your X68000 floppies">
+<meta name="twitter:description" content="XDF / HDS / HDF を直接読んで全文索引化。MCP で Claude に繋ぎ、当時のソース・MML・ドキュメントを自然言語で引ける。">
+<meta name="twitter:image" content="https://rtanote.github.io/x68k-archive/apple-touch-icon.png">
+<link rel="canonical" href="https://rtanote.github.io/x68k-archive/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "x68k-archive",
+  "url": "https://rtanote.github.io/x68k-archive/",
+  "image": "https://rtanote.github.io/x68k-archive/apple-touch-icon.png",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Disk image reader / full-text index / MCP server",
+  "operatingSystem": "Linux, macOS, Windows (Docker)",
+  "inLanguage": ["ja", "en"],
+  "license": "https://github.com/rtanote/x68k-archive/blob/main/LICENSE",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" },
+  "description": "X68000 (Human68k) の XDF / HDS / HDF ディスクイメージを直接読み出し、全文索引化して MCP 経由で Claude から検索・閲覧できるようにする Rust ツール群。A Rust toolkit that reads X68000 disk images, builds a full-text index, and exposes the archive to Claude over MCP.",
+  "author": { "@type": "Person", "name": "rtanote", "url": "https://github.com/rtanote" },
+  "codeRepository": "https://github.com/rtanote/x68k-archive",
+  "programmingLanguage": "Rust"
+}
+</script>
+<style>
+  :root {
+    --bg: #101018;
+    --panel: #181824;
+    --fg: #d8d8e0;
+    --muted: #8a8a99;
+    --amber: #e8b04a;
+    --green: #6fce8f;
+    --border: #2c2c3c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Hiragino Sans", "Noto Sans JP", sans-serif;
+    line-height: 1.75;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+  h1, h2 { font-family: ui-monospace, "Menlo", "Consolas", monospace; }
+  h1 { color: var(--amber); font-size: 1.9rem; margin: 0; }
+  h2 {
+    color: var(--amber);
+    font-size: 1.1rem;
+    margin: 2.8rem 0 0.8rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.4rem;
+  }
+  h2::before { content: "■ "; color: var(--green); }
+  .tagline { color: var(--muted); margin: 0.4rem 0 0; }
+  .en { color: var(--muted); font-size: 0.9rem; }
+  /* 図は縮めすぎるとラベルが読めなくなるので、最小幅を割ったら
+     ページ全体ではなく図の枠内だけを横スクロールさせる */
+  .hero { margin-top: 1.8rem; overflow-x: auto; }
+  .hero svg { width: 100%; min-width: 560px; height: auto; display: block; }
+  .caption { color: var(--muted); font-size: 0.8rem; text-align: center; margin-top: 0.4rem; }
+  pre {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  code { font-family: ui-monospace, "Menlo", "Consolas", monospace; }
+  pre .c { color: var(--muted); }
+  pre .p { color: var(--green); }
+  ul { padding-left: 1.4rem; }
+  li { margin: 0.3rem 0; }
+  a { color: var(--green); }
+  .scroll { overflow-x: auto; margin-top: 0.6rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: normal; font-size: 0.8rem; }
+  td:first-child { font-family: ui-monospace, "Menlo", "Consolas", monospace; color: var(--amber); white-space: nowrap; }
+  .ask {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    border-radius: 4px;
+    padding: 0.7rem 1rem;
+    margin: 0.5rem 0;
+  }
+  .ask p { margin: 0; }
+  .ask .en { display: block; margin-top: 0.2rem; }
+  .note {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    border-radius: 4px;
+    padding: 0.9rem 1rem;
+  }
+  .note p:first-child { margin-top: 0; }
+  .note p:last-child { margin-bottom: 0; }
+  footer {
+    margin-top: 3.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>x68k-archive</h1>
+<p class="tagline">X68000 のディスクイメージを、Claude に聞けるナレッジベースに<br>
+<span class="en">Turn a pile of X68000 floppies into an archive you can actually ask questions of.</span></p>
+
+<div class="hero">
+<svg viewBox="0 0 720 250" role="img" aria-labelledby="diagram-title diagram-desc">
+  <title id="diagram-title">x68k-archive のデータの流れ</title>
+  <desc id="diagram-desc">ディスクイメージ群を xdf-fs が読み、xdf-index が全文索引を作り、xdf-mcp が MCP サーバとして公開し、Claude から自然言語で問い合わせる、という4段の流れを示した図。</desc>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6fce8f"/>
+    </marker>
+    <style>
+      .bx  { fill: #181824; stroke: #2c2c3c; stroke-width: 1.5; }
+      .ttl { fill: #e8b04a; font: 600 14px ui-monospace, Consolas, monospace; }
+      .sub { fill: #8a8a99; font: 11px "Hiragino Sans", "Noto Sans JP", sans-serif; }
+      .lk  { stroke: #6fce8f; stroke-width: 1.5; fill: none; }
+      .lbl { fill: #6fce8f; font: 10px ui-monospace, Consolas, monospace; }
+    </style>
+  </defs>
+
+  <!-- 1. ディスクイメージ -->
+  <rect class="bx" x="8"   y="70" width="150" height="86" rx="5"/>
+  <text class="ttl" x="24" y="97">disk images</text>
+  <text class="sub" x="24" y="117">XDF / HDS / HDF</text>
+  <text class="sub" x="24" y="134">+ LZH の中身も</text>
+
+  <!-- 2. xdf-fs / xdf-index -->
+  <rect class="bx" x="200" y="70" width="160" height="86" rx="5"/>
+  <text class="ttl" x="216" y="97">xdf-index</text>
+  <text class="sub" x="216" y="117">tantivy 全文索引</text>
+  <text class="sub" x="216" y="134">AI 要約 / メタデータ</text>
+
+  <!-- 3. xdf-mcp -->
+  <rect class="bx" x="402" y="70" width="150" height="86" rx="5"/>
+  <text class="ttl" x="418" y="97">xdf-mcp</text>
+  <text class="sub" x="418" y="117">MCP サーバ</text>
+  <text class="sub" x="418" y="134">7 ツール</text>
+
+  <!-- 4. Claude -->
+  <rect class="bx" x="594" y="70" width="118" height="86" rx="5"/>
+  <text class="ttl" x="610" y="97">Claude</text>
+  <text class="sub" x="610" y="117">Desktop /</text>
+  <text class="sub" x="610" y="134">Code</text>
+
+  <!-- 矢印 -->
+  <path class="lk" d="M158,113 H196" marker-end="url(#ar)"/>
+  <path class="lk" d="M360,113 H398" marker-end="url(#ar)"/>
+  <path class="lk" d="M552,113 H590" marker-end="url(#ar)"/>
+
+  <text class="lbl" x="160" y="103">読む</text>
+  <text class="lbl" x="362" y="103">引く</text>
+  <text class="lbl" x="554" y="103">MCP</text>
+
+  <!-- 下段: 補足 -->
+  <text class="sub" x="24"  y="186">SJIS → UTF-8</text>
+  <text class="sub" x="24"  y="203">Human68k 18.3 名</text>
+  <text class="sub" x="216" y="186">本文・ファイル名・</text>
+  <text class="sub" x="216" y="203">拡張子で検索</text>
+  <text class="sub" x="418" y="186">stdio / HTTP</text>
+  <text class="sub" x="418" y="203">PIC 画像も表示</text>
+  <text class="sub" x="610" y="186">自然言語で</text>
+  <text class="sub" x="610" y="203">問い合わせ</text>
+
+  <!-- 手元で完結することを示す枠 -->
+  <rect x="4" y="34" width="552" height="182" rx="7" fill="none" stroke="#2c2c3c" stroke-width="1" stroke-dasharray="4 4"/>
+  <text class="sub" x="16" y="52">手元で完結 — ディスクの中身は外に出ない / stays on your machine</text>
+</svg>
+</div>
+<p class="caption">ディスクイメージ → 索引 → MCP → Claude。索引もイメージもローカルに置いたまま使う。</p>
+
+<h2>これは何?</h2>
+<p>X68000 (Human68k) のフロッピー / SCSI・SASI HDD イメージを、<strong>エミュレータを起動せずにホストから直接読む</strong>ための Rust ツール群です。
+読めるだけでなく、中身を全文索引化し、MCP (Model Context Protocol) サーバとして Claude に繋ぎます。</p>
+<p>数十枚〜数百枚のディスクに散らばった当時のソースコード・MML・ドキュメントを、
+「どのディスクの何番目だったか」を覚えていなくても引けるようになります。
+LZH の中身も展開して索引に入るので、<code>DISK.LZH</code> の奥に埋まったファイルにも届きます。</p>
+<p class="en">A Rust toolkit that reads X68000 (Human68k) disk images — XDF floppies, HDS (SCSI) and HDF (SASI) hard disks —
+directly from the host, with no emulator. It also builds a full-text index over their contents and exposes it to
+Claude through an MCP server, including files nested inside LZH archives.</p>
+
+<h2>何ができるか / What you can ask</h2>
+<p>Claude に繋いだあとは、こういう聞き方ができます。</p>
+
+<div class="ask">
+<p>「スプライトのスクロール処理をしている作例を探して、今の Unity ならどう書くか教えて」</p>
+<span class="en">"Find sprite scrolling examples in the archive, then show me how I'd write that in Unity today."</span>
+</div>
+<div class="ask">
+<p>「このディスクの MUSIC ディレクトリにある MML を全部挙げて、使っている音源ドライバごとに分類して」</p>
+<span class="en">"List every MML file in this disk's MUSIC directory, grouped by which sound driver it targets."</span>
+</div>
+<div class="ask">
+<p>「Dennou074A.img の TTL1.PIC を見せて」<span class="en">"Show me TTL1.PIC from Dennou074A.img."</span></p>
+</div>
+
+<p>これを支えているのが以下の 7 ツールです。Claude が必要に応じて自分で呼び分けます。</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>ツール</th><th>用途</th></tr></thead>
+  <tbody>
+    <tr><td>archive_search</td><td>全文検索。出典 (イメージ:パーティション:パス) と抜粋を返す</td></tr>
+    <tr><td>archive_read</td><td>ファイル読み出し。テキストは SJIS → UTF-8、バイナリは hex</td></tr>
+    <tr><td>archive_list</td><td>ディレクトリ一覧</td></tr>
+    <tr><td>archive_summarize</td><td>イメージ単位の AI 要約 (「このディスクは何か」)</td></tr>
+    <tr><td>archive_view_image</td><td>X68000 の PIC 画像を PNG に変換してその場で表示</td></tr>
+    <tr><td>archive_metadata_query</td><td>構造化メタデータへの確定的なクエリ (号数・投稿者・カテゴリ等)</td></tr>
+    <tr><td>archive_extract</td><td>複数ファイルを ZIP にまとめて取り出す</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>はじめかた / Getting started</h2>
+<p>ホストに Rust は不要です。Docker があれば動きます。</p>
+<pre><code><span class="c"># 1. ビルド</span>
+git clone https://github.com/rtanote/x68k-archive.git
+cd x68k-archive
+docker build -t x68k-archive .
+
+<span class="c"># 2. 手持ちのイメージを索引化 (./archive に置く)</span>
+docker run --rm \
+  -v $PWD/archive:/archive:ro \
+  -v $PWD/index:/index \
+  x68k-archive xdf-index build /archive --out /index
+
+<span class="c"># 3. 動作確認</span>
+docker run --rm -v $PWD/index:/index x68k-archive \
+  xdf-index search "スプライト" --index /index
+</code></pre>
+
+<p>あとは Claude Desktop / Claude Code の MCP 設定に <code>xdf-mcp --index &lt;索引ディレクトリ&gt;</code> を登録するだけです
+(<code>--http</code> を省略すると stdio モード)。手順は
+<a href="https://github.com/rtanote/x68k-archive/blob/main/docs/claude-desktop-setup.md">docs/claude-desktop-setup.md</a> に書いてあります。</p>
+<p class="en">No Rust toolchain needed — Docker is enough. Build, index your own images, then register
+<code>xdf-mcp --index &lt;dir&gt;</code> as an MCP server in Claude Desktop or Claude Code.</p>
+
+<h2>コマンドラインだけでも使える</h2>
+<p>Claude を使わずに、素の CLI としても完結しています。<code>xdfls</code> / <code>xdfcp</code> / <code>xdfgrep</code> の 3 本。</p>
+<pre><code><span class="p">$</span> xdfls disk.hds:0:/MUSIC
+MUSIC:
+  D------           0  1994-07-01 12:00  SRC/
+  -----A-      11,151  1994-06-28 23:14  SAMPLE.ZMS
+  -----A-       1,211  1994-06-28 23:15  SAMPLE.DOC
+
+<span class="p">$</span> xdfgrep -i disk.hds:0 "*.zms"        <span class="c"># グロブで横断検索</span>
+<span class="p">$</span> xdfcp -R disk.xdf:/MUSIC ./out/       <span class="c"># ホストへ取り出し (mtime 保持)</span>
+</code></pre>
+<p>ファイル名は Shift-JIS から UTF-8 に変換され、Human68k 拡張の 18.3 形式
+(主名 8+9 バイト) の全角ファイル名もそのまま読めます。
+イメージ指定は <code>path:パーティション:/内部パス</code>、LZH 内部は <code>outer.lzh!/inner.zms</code> です。</p>
+
+<h2>常駐サーバとして使う / Run it as a server</h2>
+<p>NAS にアーカイブを置いて Linux マシンで常駐させ、Tailscale Funnel 経由の HTTPS で
+Mac / Windows / iPad の Claude から使う構成も用意しています。
+NFS マウント、秘密パスによる保護、systemd automount の設定まで
+<a href="https://github.com/rtanote/x68k-archive/blob/main/docs/server-deployment.md">docs/server-deployment.md</a> に書いてあります。</p>
+<pre><code><span class="p">$</span> cp .env.example .env    <span class="c"># ARCHIVE_DIR などを設定</span>
+<span class="p">$</span> docker compose up -d    <span class="c"># HTTP モードで常駐 (既定 :8765)</span>
+</code></pre>
+
+<h2>著作権について / About copyright</h2>
+<div class="note">
+<p><strong>このリポジトリはツールだけを配布しています。</strong> ディスクイメージ・索引・AI 要約・抽出物は一切含まれていません。</p>
+<ul>
+  <li>雑誌付属ディスク (電脳倶楽部、Oh!X 等) やその収録物は著作物です。<strong>自分が正当に取得したイメージ</strong>に対してのみ使ってください</li>
+  <li>生成される索引と要約は<strong>原本の逐語テキストを含みます</strong>。公開・再配布しないでください (<code>.gitignore</code> で除外済みです)</li>
+  <li>テストフィクスチャ中の人名・楽曲名・許諾番号はすべて架空です</li>
+  <li>MIT ライセンスはこのソースコードにのみ適用され、処理対象のイメージの内容には及びません</li>
+</ul>
+<p class="en">This repository ships tools only — no disk images, no index, no summaries. Use it on images you
+lawfully own. The generated index and summaries contain verbatim text from the originals, so keep them private.
+The MIT licence covers this source tree, not the content it processes.</p>
+</div>
+
+<h2>リンク / Links</h2>
+<ul>
+  <li><a href="https://github.com/rtanote/x68k-archive">GitHub — ソースと詳しい README</a></li>
+  <li><a href="https://github.com/rtanote/x68k-archive/blob/main/docs/claude-desktop-setup.md">Claude Desktop / Claude Code からの接続手順</a></li>
+  <li><a href="https://github.com/rtanote/x68k-archive/blob/main/docs/server-deployment.md">Linux + Tailscale Funnel での常駐運用</a></li>
+  <li><a href="https://github.com/rtanote/x68k-archive/blob/main/docs/hdd-format.md">HDS / HDF のパーティションテーブルと Human68k HDD BPB (実機解析)</a></li>
+  <li><a href="https://rtanote.github.io/sted2/">STed2 — X68000 のステップ入力 MIDI シーケンサを現代の Linux へ</a></li>
+</ul>
+
+<footer>
+<p>x68k-archive © 2026 <a href="https://github.com/rtanote">rtanote</a> — MIT License.
+X68000 / Human68k はシャープ株式会社の製品です。本プロジェクトは非公式のサードパーティツールです。</p>
+</footer>
+
+</main>
+<script data-goatcounter="https://x68k-archive.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
