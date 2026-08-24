@@ -1849,7 +1849,7 @@ dependencies = [
 [[package]]
 name = "png2pic"
 version = "0.1.0"
-source = "git+https://github.com/rtanote/png2pic.git?branch=main#f844feac2c2413e58f5f6177aac2eb127604a6ae"
+source = "git+https://github.com/rtanote/png2pic.git?rev=f844feac2c2413e58f5f6177aac2eb127604a6ae#f844feac2c2413e58f5f6177aac2eb127604a6ae"
 dependencies = [
  "anyhow",
  "clap",
