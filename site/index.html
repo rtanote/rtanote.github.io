@@ -103,6 +103,13 @@
   }
   .ask p { margin: 0; }
   .ask .en { display: block; margin-top: 0.2rem; }
+  .memo {
+    margin: 0.9rem 0;
+    padding: 0.2rem 0 0.2rem 1rem;
+    border-left: 2px solid var(--border);
+    color: var(--fg);
+  }
+  .memo p { margin: 0.35rem 0; }
   .note {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -196,15 +203,40 @@
 </div>
 <p class="caption">ディスクイメージ → 索引 → MCP → Claude。索引もイメージもローカルに置いたまま使う。</p>
 
-<h2>これは何?</h2>
-<p>X68000 (Human68k) のフロッピー / SCSI・SASI HDD イメージを、<strong>エミュレータを起動せずにホストから直接読む</strong>ための Rust ツール群です。
+<h2>背景 / Why</h2>
+<p>X68000 は、開けたら今でも熱の冷めやらない<strong>宝箱</strong>です。ただ、あれから 40 年近くが経って、
+X68000 の時代と今のコンピューティングライフで何が決定的に違うかというと、
+私は <strong>検索性</strong> だと考えています。</p>
+
+<p>遠い記憶を頼りに——</p>
+<div class="memo">
+<p>「あれは確か Oh!X の 90 年前後の付録ディスクにあったよな?」</p>
+<p>「電脳倶楽部の C 言語講座で、常駐プログラムの作り方が書かれてたよな?」</p>
+</div>
+<p>——と思い当たっても、そこから先は本体にフロッピーディスクを 1 枚ずつ投入してファイラで調べたり、
+イメージ化したディスクをエミュレータに認識させて調べたり。貴重な時間を費やしてしまいます。
+それはそれで、寄り道としては趣があるのですが、時間ばかり使ってしまい……
+<strong>玉手箱</strong>になってしまいませんか?</p>
+
+<p class="en">Open an X68000 disk and the heat still has not faded — it is a <strong>treasure chest</strong>.
+But nearly forty years on, the decisive difference between computing then and now is, I think,
+<strong>searchability</strong>. You half-remember something — <em>"wasn't that on an Oh!X supplement disk
+from around 1990?"</em>, <em>"didn't the 電脳倶楽部 C course explain how to write a memory-resident
+program?"</em> — and from there it is feeding floppies into the real machine one at a time and walking
+them with a filer, or mounting an image in an emulator. There is a certain charm to that detour,
+admittedly — but the hours vanish, and the treasure chest quietly turns into <em>tamatebako</em>,
+the casket from the Urashima Tarō folktale: you open it, and the years are already gone.</p>
+
+<h2>これは何? / What is this</h2>
+<p>これは、X68000 (Human68k) の FD / SCSI・SASI HDD イメージを、
+<strong>実機やエミュレータを起動せずにホストから直接読む</strong>ための Rust ツール群です。
 読めるだけでなく、中身を全文索引化し、MCP (Model Context Protocol) サーバとして Claude に繋ぎます。</p>
 <p>数十枚〜数百枚のディスクに散らばった当時のソースコード・MML・ドキュメントを、
 「どのディスクの何番目だったか」を覚えていなくても引けるようになります。
 LZH の中身も展開して索引に入るので、<code>DISK.LZH</code> の奥に埋まったファイルにも届きます。</p>
 <p class="en">A Rust toolkit that reads X68000 (Human68k) disk images — XDF floppies, HDS (SCSI) and HDF (SASI) hard disks —
-directly from the host, with no emulator. It also builds a full-text index over their contents and exposes it to
-Claude through an MCP server, including files nested inside LZH archives.</p>
+directly from the host, with neither the real machine nor an emulator. It also builds a full-text index over their
+contents and exposes it to Claude through an MCP server, including files nested inside LZH archives.</p>
 
 <h2>何ができるか / What you can ask</h2>
 <p>Claude に繋いだあとは、こういう聞き方ができます。</p>
@@ -261,7 +293,7 @@ docker run --rm -v $PWD/index:/index x68k-archive \
 <p class="en">No Rust toolchain needed — Docker is enough. Build, index your own images, then register
 <code>xdf-mcp --index &lt;dir&gt;</code> as an MCP server in Claude Desktop or Claude Code.</p>
 
-<h2>コマンドラインだけでも使える</h2>
+<h2>コマンドラインだけでも使える / CLI only, no Claude needed</h2>
 <p>Claude を使わずに、素の CLI としても完結しています。<code>xdfls</code> / <code>xdfcp</code> / <code>xdfgrep</code> の 3 本。</p>
 <pre><code><span class="p">$</span> xdfls disk.hds:0:/MUSIC
 MUSIC:
