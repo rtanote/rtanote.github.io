@@ -1,0 +1,30 @@
+# フロッピー複数枚を1サマリにまとめる設定例
+#
+# 使い方:
+#   xdf-index show-groups /archive --groups xdf-grouping.toml
+#   xdf-index summarize /archive --index /index --groups xdf-grouping.toml
+#
+# 解決順:
+#   1. solo_extensions に該当 → 単独
+#   2. manual_group のメンバ名に一致 → そのグループ
+#   3. rule を上から順にマッチ → capture[1] が group_key
+#   4. どれにも該当しない → 単独
+
+# HDS / HDF など大容量はそのまま単独にする
+solo_extensions = ["hds", "hdf", "dim", "d88"]
+
+# 電脳倶楽部: Dennou074A.img / Dennou074B.img / Dennou074X.img → "Dennou074"
+[[rule]]
+name = "電脳倶楽部 (vol番号 + 面記号 A/B/X)"
+pattern = '^(Dennou\d+)[A-Z]\.(?:img|xdf)$'
+
+# 汎用: 末尾の英大文字1文字を面記号とみなして剥ぐ
+# (例: Foo_A.img / Foo_B.img → "Foo_")
+[[rule]]
+name = "汎用フロッピー (末尾英大文字1字を面記号として剥ぐ)"
+pattern = '^(.+?)[A-Z]?\.(?:xdf|img|2hd)$'
+
+# 自動判定が間違う場合の手動上書き例:
+# [[manual_group]]
+# id = "OhX_1990_anniversary"
+# members = ["OhX_special1.img", "OhX_special2.img"]

@@ -1,0 +1,57 @@
+[package]
+name = "xdf-mcp"
+description = "MCP server exposing X68000 disk image archives over stdio or Streamable HTTP"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+xdf-fs = { path = "../xdf-fs" }
+xdf-index = { path = "../xdf-index" }
+anyhow.workspace = true
+clap.workspace = true
+encoding_rs.workspace = true
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# PIC (X68000 native image) → PNG 変換用 (GitHub の rtanote/png2pic を git 依存)
+# Cargo が初回ビルド時に自動 fetch + キャッシュ。ライセンス: MIT
+# ビルド再現性のため branch ではなく rev で固定する
+png2pic = { git = "https://github.com/rtanote/png2pic.git", rev = "f844feac2c2413e58f5f6177aac2eb127604a6ae" }
+image = { version = "0.25", default-features = false, features = ["png"] }
+base64 = "0.22"
+
+# MCP プロトコル実装 (Anthropic 公式の Rust SDK)
+rmcp = { version = "1.5", features = [
+    "server",
+    "transport-io",
+    "transport-streamable-http-server",
+    "transport-streamable-http-server-session",
+    "macros",
+] }
+
+# rmcp は async (tokio) を要求
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "sync", "signal", "net"] }
+tokio-util = "0.7"
+
+# HTTP トランスポート用 web フレームワーク
+axum = "0.8"
+
+# rmcp のツール引数スキーマ生成 (rmcp が再エクスポートしているので合わせる)
+schemars = "1.0"
+
+# archive_extract: 複数ファイル/ディレクトリを一括 ZIP 化
+# Store のみ使用 (X68000 ファイルは既に圧縮されているケースが多く再圧縮の利得は小)
+zip = { version = "2", default-features = false }
+# 一時 ZIP ファイルの一意 ID
+uuid = { version = "1", features = ["v4"] }
+# paths の glob (`*.X` `IKAP/**/*` 等) サポート
+globset = "0.4"
+# axum 0.8 のファイル配信用 (download URL 経由で ZIP を取得させる)
+tower = "0.5"
+tower-http = { version = "0.6", features = ["fs"] }
+
+[[bin]]
+name = "xdf-mcp"
+path = "src/main.rs"

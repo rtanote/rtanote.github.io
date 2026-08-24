@@ -1,0 +1,48 @@
+[package]
+name = "xdf-index"
+description = "Full-text index, AI summaries, and structured metadata over X68000 disk image archives"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+xdf-fs = { path = "../xdf-fs" }
+anyhow.workspace = true
+clap.workspace = true
+encoding_rs.workspace = true
+
+# tantivy: 全文索引エンジン (Pure Rust)
+tantivy = "0.22"
+
+# 内容ハッシュ (image_id) と JSON (summary cache) 用 (Phase 4 で使うが先に追加)
+sha1 = "0.10"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# LZH (LHA) アーカイブの中身を索引化するため
+delharc = "0.6"
+
+# Phase 4b: Anthropic API クライアント (要約)
+reqwest = { version = "0.12", features = ["blocking", "json", "rustls-tls"], default-features = false }
+# .env ファイルから ANTHROPIC_API_KEY を読む
+dotenvy = "0.15"
+# 要約タイムスタンプ用
+chrono = { version = "0.4", default-features = false, features = ["serde", "clock"] }
+
+# Phase 4b.5: フロッピーグルーピング (xdf-grouping.toml)
+regex = "1"
+toml = "0.8"
+
+# Phase 5b: 構造化メタデータ抽出
+unicode-normalization = "0.1"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "xdf-index"
+path = "src/bin/xdf-index.rs"
+
+[dev-dependencies]
+tempfile = "3"

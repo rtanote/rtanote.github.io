@@ -1,0 +1,28 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/xdf-fs",
+    "crates/xdf-index",
+    "crates/xdf-mcp",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["rtanote <rtanote@users.noreply.github.com>"]
+license = "MIT"
+repository = "https://github.com/rtanote/x68k-archive"
+readme = "README.md"
+
+# 全クレート共通の依存バージョン
+[workspace.dependencies]
+anyhow = "1"
+encoding_rs = "0.8"
+memmap2 = "0.9"
+clap = { version = "4", features = ["derive", "env"] }
+bitflags = "2"
+filetime = "0.2"
+
+[profile.release]
+lto = true
+codegen-units = 1

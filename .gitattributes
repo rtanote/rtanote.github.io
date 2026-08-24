@@ -1,0 +1,11 @@
+# 改行コードは常に LF で保存する。
+# Windows では core.autocrlf が有効なことが多く、これが無いと clone 時に
+# rebuild.sh / compose-rebuild.sh が CRLF になり bash で壊れる。
+* text=auto eol=lf
+
+*.png binary
+*.img binary
+*.xdf binary
+*.hds binary
+*.hdf binary
+*.dim binary

@@ -1,0 +1,27 @@
+[package]
+name = "xdf-fs"
+description = "Read X68000 disk images (XDF / HDS / HDF) and access Human68k filesystem"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+encoding_rs.workspace = true
+memmap2.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+bitflags.workspace = true
+filetime.workspace = true
+
+[[example]]
+name = "xdfls"
+path = "examples/xdfls.rs"
+
+[[example]]
+name = "xdfcp"
+path = "examples/xdfcp.rs"
+
+[[example]]
+name = "xdfgrep"
+path = "examples/xdfgrep.rs"
