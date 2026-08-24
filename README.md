@@ -10,6 +10,8 @@ MCP (Model Context Protocol) サーバを同梱しており、Claude から自�
 [![CI](https://github.com/rtanote/x68k-archive/actions/workflows/ci.yml/badge.svg)](https://github.com/rtanote/x68k-archive/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+**→ [紹介ページ / Overview](https://rtanote.github.io/x68k-archive/)**
+
 ## これは何か
 
 3つのクレートからなる Rust workspace:
@@ -272,6 +274,7 @@ docker run --rm x68k-archive:test cargo test --release --locked --workspace
 - [docs/hdd-format.md](docs/hdd-format.md) — HDS/HDF パーティションテーブル + Human68k HDD BPB の実機解析結果
 - [docs/claude-desktop-setup.md](docs/claude-desktop-setup.md) — Claude Desktop / Claude Code からの接続手順
 - [docs/server-deployment.md](docs/server-deployment.md) — Linux + Tailscale Funnel での常駐運用
+- [紹介ページ](https://rtanote.github.io/x68k-archive/) — 概要と使い方 (GitHub Pages)
 - [skills/x68k-archive/](skills/x68k-archive/) — Claude Skill (利用作法 + 現代プラットフォームへの翻案マッピング)
 
 ## 主な設計判断
